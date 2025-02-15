@@ -1,7 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/store";
-import { subscribeToPosts, deletePost, toggleLike } from "../store/features/postSlice";
-import { Badge, Button, ButtonGroup, ListGroup } from "react-bootstrap";
+import {
+  subscribeToPosts,
+  deletePost,
+  toggleLike,
+} from "../store/features/postSlice";
+import { Badge, Button, ButtonGroup, ListGroup, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -9,14 +13,23 @@ export default function PostList() {
   const dispatch = useAppDispatch();
   const posts = useAppSelector((state) => state.posts.posts);
   const user = useAppSelector((state) => state.auth.user);
+  const [processingDelete, setProcessingDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const promise = dispatch(subscribeToPosts());
-
-    return () => {
-      promise.abort();
-    };
+    return () => promise.abort();
   }, [dispatch]);
+
+  const handleDelete = async (postId: string) => {
+    setProcessingDelete(postId);
+    try {
+      await dispatch(deletePost(postId)).unwrap();
+    } catch (error) {
+      console.error("Delete error:", error);
+    } finally {
+      setProcessingDelete(null);
+    }
+  };
 
   return (
     <div>
@@ -33,7 +46,7 @@ export default function PostList() {
             <div className="ms-2 me-auto list__content-wrapper">
               <div className="fw-bold list__author">
                 <strong>Author: </strong>
-                {user?.displayName}
+                {post.authorName}
               </div>
               <div className="list__content">{post.content}</div>
             </div>
@@ -48,16 +61,22 @@ export default function PostList() {
                   {post.likes.length} Likes
                 </Badge>
               </Button>
-              <Button
-                size="sm"
-                variant="danger"
-                onClick={() => dispatch(deletePost(post.id))}
-                disabled={!user}
-              >
-                <Badge bg="danger" pill>
-                  <FontAwesomeIcon icon={faTrash} />
-                </Badge>
-              </Button>
+              {user && user.uid === post.authorId && (
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onClick={() => handleDelete(post.id)}
+                  disabled={!user || processingDelete === post.id}
+                >
+                  <Badge bg="danger" pill>
+                    {processingDelete === post.id ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      <FontAwesomeIcon icon={faTrash} />
+                    )}
+                  </Badge>
+                </Button>
+              )}
             </ButtonGroup>
           </ListGroup.Item>
         ))}
