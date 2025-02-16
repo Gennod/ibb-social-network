@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { Post, PostState } from "../../types";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { Comment, Post, PostState } from "../../types";
+import { v4 as uuidv4 } from "uuid";
 import {
   getDocs,
   collection,
@@ -13,6 +14,7 @@ import {
   onSnapshot,
   deleteDoc,
   serverTimestamp,
+  arrayUnion,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 
@@ -74,16 +76,45 @@ export const addPost = createAsyncThunk(
       authorId: user.uid,
       createdAt: serverTimestamp(),
       authorName: user.displayName || "Anonymous",
+      comments: [],
     };
 
     const docRef = await addDoc(collection(db, "posts"), newPost);
     return {
-      id: docRef.id,
+      id: uuidv4(),
       content,
       likes: [],
       authorId: user.uid,
       createdAt: new Date().toISOString(),
       authorName: user.displayName || "Anonymous",
+      comments: [],
+    };
+  }
+);
+
+export const addComment = createAsyncThunk(
+  "posts/addComment",
+  async ({ content, postId }: { content: string; postId: string }) => {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User is not authenticated");
+
+    const postRef = doc(db, "posts", postId);
+
+    const newComment: Comment = {
+      content,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+      authorId: user.uid,
+      likes: [],
+      authorName: user.displayName || "Anonymous",
+    };
+
+    await updateDoc(postRef, {
+      comments: arrayUnion(newComment),
+    });
+    return {
+      ...newComment,
+      postId,
     };
   }
 );
@@ -103,6 +134,39 @@ export const toggleLike = createAsyncThunk(
 
     await updateDoc(docRef, { likes: newLikes });
     return { postId, likes: newLikes };
+  }
+);
+
+export const toggleCommentLike = createAsyncThunk(
+  "posts/toggleCommentLike",
+  async ({ postId, commentId }: { postId: string; commentId: string }) => {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User is not authenticated");
+
+    const postRef = doc(db, "posts", postId);
+    const postSnap = await getDoc(postRef);
+    const post = postSnap.data() as Post;
+
+    // Находим нужный комментарий и обновляем лайки
+    const updatedComments = post.comments.map((comment) => {
+      if (comment.id === commentId) {
+        const newLikes = comment.likes.includes(user.uid)
+          ? comment.likes.filter((uid) => uid !== user.uid) // Убираем лайк
+          : [...comment.likes, user.uid]; // Добавляем лайк
+        return { ...comment, likes: newLikes };
+      }
+      return comment;
+    });
+
+    // Обновляем комментарии в Firestore
+    await updateDoc(postRef, { comments: updatedComments });
+
+    // Возвращаем обновленные данные
+    return {
+      postId,
+      commentId,
+      likes: updatedComments.find((c) => c.id === commentId)?.likes || [],
+    };
   }
 );
 
@@ -128,6 +192,41 @@ export const deletePost = createAsyncThunk(
       return postId; // Возвращаем ID для обновления состояния
     } catch (error) {
       console.log(error);
+    }
+  }
+);
+
+export const deleteComment = createAsyncThunk(
+  "posts/deleteComment",
+  async (
+    { postId, commentId }: { postId: string; commentId: string },
+    { rejectWithValue }
+  ) => {
+    const user = auth.currentUser;
+    if (!user) return rejectWithValue("User not authenticated");
+
+    try {
+      const postRef = doc(db, "posts", postId);
+      const postSnap = await getDoc(postRef);
+      const post = postSnap.data() as Post;
+
+      // Проверяем, что комментарий принадлежит текущему пользователю
+      const comment = post.comments.find((c) => c.id === commentId);
+      if (!comment) return rejectWithValue("Comment not found");
+      if (comment.authorId !== user.uid) {
+        return rejectWithValue("Not authorized to delete this comment");
+      }
+
+      // Удаляем комментарий из массива
+      const updatedComments = post.comments.filter((c) => c.id !== commentId);
+
+      // Обновляем пост в Firestore
+      await updateDoc(postRef, { comments: updatedComments });
+
+      return { postId, commentId };
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      return rejectWithValue("Failed to delete comment");
     }
   }
 );
@@ -166,6 +265,28 @@ const postSlice = createSlice({
       })
       .addCase(deletePost.fulfilled, (state, action) => {
         state.posts = state.posts.filter((post) => post.id !== action.payload);
+      })
+      .addCase(toggleCommentLike.fulfilled, (state, action) => {
+        const post = state.posts.find((p) => p.id === action.payload.postId);
+        if (post) {
+          const comment = post.comments.find(
+            (c) => c.id === action.payload.commentId
+          );
+          if (comment) {
+            comment.likes = action.payload.likes; // Обновляем лайки
+          }
+        }
+      })
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        const post = state.posts.find((p) => p.id === action.payload.postId);
+        if (post) {
+          post.comments = post.comments.filter(
+            (c) => c.id !== action.payload.commentId
+          ); 
+        }
+      })
+      .addCase(deleteComment.rejected, (state, action) => {
+        console.error("Failed to delete comment:", action.payload);
       });
   },
 });
