@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/store";
-import { v4 as uuidv4 } from "uuid";
+import anonymousJpg from "../images/anonymous.jpg"
 import {
   subscribeToPosts,
   deletePost,
@@ -137,7 +137,7 @@ export default function PostList() {
                     >
                       <img
                         className="comment__author-img"
-                        src={user?.photoURL || undefined}
+                        src={user?.photoURL || anonymousJpg}
                       ></img>
                       <div className="d-flex flex-column justify-content-between">
                         <strong>{comment.authorName}</strong>
