@@ -7,14 +7,26 @@ export interface AuthUser {
   photoURL: string | undefined | null;
 }
 
+export interface Comment {
+  content: string;
+  id: string;
+  createdAt: string;
+  authorId: string;
+  likes: string[];
+  authorName: string;
+}
+
 export interface Post {
   id: string;
   content: string;
   createdAt: string;
   authorId: string;
   likes: string[];
-  authorName: string
+  authorName: string;
+  comments: Comment[]
 }
+
+
 
 export interface PostState {
   posts: Post[];
