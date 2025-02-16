@@ -137,7 +137,7 @@ export default function PostList() {
                     >
                       <img
                         className="comment__author-img"
-                        src={user?.photoURL || anonymousJpg}
+                        src={comment?.authorPhotoURL || user?.photoURL || anonymousJpg}
                       ></img>
                       <div className="d-flex flex-column justify-content-between">
                         <strong>{comment.authorName}</strong>

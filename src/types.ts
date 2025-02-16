@@ -14,6 +14,7 @@ export interface Comment {
   authorId: string;
   likes: string[];
   authorName: string;
+  authorPhotoURL?: string; 
 }
 
 export interface Post {

@@ -98,24 +98,22 @@ export const addComment = createAsyncThunk(
     const user = auth.currentUser;
     if (!user) throw new Error("User is not authenticated");
 
-    const postRef = doc(db, "posts", postId);
-
     const newComment: Comment = {
-      content,
       id: uuidv4(),
+      content,
       createdAt: new Date().toISOString(),
       authorId: user.uid,
-      likes: [],
       authorName: user.displayName || "Anonymous",
+      authorPhotoURL: user.photoURL || undefined, // Добавляем фото автора
+      likes: [],
     };
 
+    const postRef = doc(db, "posts", postId);
     await updateDoc(postRef, {
       comments: arrayUnion(newComment),
     });
-    return {
-      ...newComment,
-      postId,
-    };
+
+    return { ...newComment, postId };
   }
 );
 
