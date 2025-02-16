@@ -4,7 +4,7 @@ export interface AuthUser {
   uid: string;
   email: string | null;
   displayName: string | null;
-  photoURL: string | null;
+  photoURL: string | undefined | null;
 }
 
 export interface Post {
