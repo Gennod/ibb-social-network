@@ -1,46 +1,79 @@
-# Getting Started with Create React App
+# IBB "BLOG" - Мини Блог
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Данный проект представляет собой мини блог.
 
-## Available Scripts
+## Функционал
+- Авторизация через google
+- CRUD операции
 
-In the project directory, you can run:
+## Технологии
+ - ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+- ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+- ![Redux + RTK](https://img.shields.io/badge/redux-%23593d88.svg?style=for-the-badge&logo=redux&logoColor=white)
+- ![Firebase](https://img.shields.io/badge/firebase-a08021?style=for-the-badge&logo=firebase&logoColor=ffcd34)
+- ![Bootstrap](https://img.shields.io/badge/bootstrap-%238511FA.svg?style=for-the-badge&logo=bootstrap&logoColor=white)
+- ![Netlify](https://img.shields.io/badge/netlify-%23000000.svg?style=for-the-badge&logo=netlify&logoColor=#00C7B7)
 
-### `npm start`
+## Установка и запуск
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1. Клонируйте репозиторий:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+git clone https://github.com/Gennod/ibb-social-network.git
+```
 
-### `npm test`
+2. Установите зависимости:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+npm install
+```
 
-### `npm run build`
+3. Запустите приложение:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Демо
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Посмотреть работающее приложение можно здесь:
+[IBB-BLOG](https://ibb-social-network.netlify.app/)
 
-### `npm run eject`
+## Структура проекта
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+├── .gitignore
+├── README.md
+├── package-lock.json
+├── package.json
+├── public
+    ├── favicon.ico
+    ├── index.html
+    ├── logo192.png
+    ├── logo512.png
+    ├── manifest.json
+    └── robots.txt
+├── src
+    ├── App.scss
+    ├── App.tsx
+    ├── components
+    │   ├── AuthButton.tsx
+    │   ├── PostForm.tsx
+    │   └── PostList.tsx
+    ├── firebase.ts
+    ├── images
+    │   └── anonymous.jpg
+    ├── index.css
+    ├── index.tsx
+    ├── react-app-env.d.ts
+    ├── store
+    │   ├── features
+    │   │   ├── authSlice.ts
+    │   │   └── postSlice.ts
+    │   └── store.ts
+    ├── types.ts
+    └── utils
+    │   ├── _variables.scss
+    │   └── index.scss
+└── tsconfig.json
+```
